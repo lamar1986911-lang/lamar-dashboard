@@ -220,7 +220,7 @@ let cardColors=ld(SK_CC,{c1:['#0d1b33','#0a1530'],c2:['#0f1230','#0c0f2b'],c3:['
 let activeCard=null,priceCache={},dcaExecutedToday=false;
 const _fetchLog=[],_cacheTime={},CACHE_TTL=30000;
 let dailyPnL=ld(SK_DPNL,{});
-let bgColor=ld(SK_BG,'#080b12');
+let bgColor=ld(SK_BG,'#f0f2f5');
 document.body.style.background=bgColor;
 
 function _cached(k){return priceCache[k]&&_cacheTime[k]&&(Date.now()-_cacheTime[k]<CACHE_TTL);}
