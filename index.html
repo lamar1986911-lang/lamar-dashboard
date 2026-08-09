@@ -432,7 +432,7 @@ function drawTargetChart(){
     const act=actual[key]||0,actPct=total>0?(act/total*100):0,gap=actPct-cfg.tgt;
     const aw=Math.max(0,(actPct/maxPct)*100);
     const gColor=gap>=0?'#f43f5e':'#3dd68c',gSign=gap>=0?'+':'';
-    return'<div style="display:flex;align-items:center;gap:6px;padding:21px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:17px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
+    return'<div style="display:flex;align-items:center;gap:6px;padding:21px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:'+(cfg.l.length>4?'15':'17')+'px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
   }).join('');
   el.innerHTML='<div style="padding:0;font-family:\'Microsoft YaHei\',sans-serif">'+rows+'</div>';
 }
@@ -586,4 +586,3 @@ function init(){
 init();
 </script>
 </body></html>
- 
