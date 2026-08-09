@@ -48,6 +48,25 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
 .cur-cny{color:var(--red)}.cur-usd{color:var(--green)}
 .diag-bar{font-size:10px;color:#333;padding:3px 12px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;background:#f0f0f0;border-bottom:1px solid #ddd}
+@media (max-width:900px){
+  .dash-grid{grid-template-columns:1fr;gap:6px}
+  .summary-row{grid-template-columns:repeat(3,1fr)}
+  .summary-card.c4,.summary-card.c5{display:none}
+  .target-panel{grid-row:auto}
+  .trend-panel-v{grid-row:auto}
+  .topbar{gap:2px;padding:4px 6px}
+  .topbar .clock{font-size:14px;min-width:auto}
+  .indices{gap:6px}.index-item{min-width:50px}
+  .index-item .name{font-size:10px}.index-item .val{font-size:13px}.index-item .chg{font-size:10px}
+  table{font-size:9px}th{font-size:11px;padding:4px 2px}td{padding:3px 2px}
+  .tab-btn{font-size:16px;padding:6px 12px}
+  .modal{width:95vw;padding:12px;font-size:18px}
+  .modal h3{font-size:24px}.modal input,.modal select{font-size:14px}
+}
+@media (max-width:600px){
+  .summary-row{grid-template-columns:repeat(2,1fr)}
+  .summary-card.c3{display:none}
+}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .bar-flow{background-size:200% 100%;animation:shimmer 3s ease-in-out infinite}
 </style>
