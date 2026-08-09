@@ -175,7 +175,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <script src="valuation_data.js"></script>
 <script>
 // ==================== DATA ====================
-const SK_H='lamar_h_v6',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1';
+const SK_H='lamar_h_v5',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1';
 
 const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},csi_a500:{tgt:10,c:'#f472b6',l:'中证A500'},bond:{tgt:20,c:'#f0b060',l:'债券'},satellite:{tgt:5,c:'#a78bfa',l:'卫星&个股'},cdgv:{tgt:5,c:'#34d399',l:'美基'},vgt:{tgt:5,c:'#fb923c',l:'美股'}};
 const CL={};for(const[k,v]of Object.entries(CATS))CL[k]=v.l;
@@ -432,7 +432,7 @@ function drawTargetChart(){
     const act=actual[key]||0,actPct=total>0?(act/total*100):0,gap=actPct-cfg.tgt;
     const aw=Math.max(0,(actPct/maxPct)*100);
     const gColor=gap>=0?'#f43f5e':'#3dd68c',gSign=gap>=0?'+':'';
-    return'<div style="display:flex;align-items:center;gap:6px;padding:21px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:17px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
+    return'<div style="display:flex;align-items:center;gap:6px;padding:21px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:'+(cfg.l.length>4?'15':'17')+'px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
   }).join('');
   el.innerHTML='<div style="padding:0;font-family:\'Microsoft YaHei\',sans-serif">'+rows+'</div>';
 }
