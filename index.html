@@ -119,10 +119,10 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
     </div>
   </div>
   <div style="display:flex;gap:14px">
-    <div id="dailyCalendar" style="flex:1;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:12px;min-height:260px"></div>
+    <div id="dailyCalendar" style="flex:1;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:12px;min-height:200px"></div>
     <div id="top3Panel" style="flex:1.4;display:flex;flex-direction:column;gap:4px;background:#f5f5f5;border:1px solid #ddd;border-radius:10px;padding:10px;min-height:260px;color:#222"></div>
   </div>
-  <div style="display:flex;gap:12px;margin-top:6px">
+  <div style="display:flex;gap:12px;margin-top:-16px">
     <div id="allocPiePanel" style="flex:1;min-height:280px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:2px 12px 12px;display:flex;align-items:flex-start;justify-content:center"></div>
     <div id="valuationBar" style="flex:1.4;display:flex;flex-direction:column;gap:5px;min-width:280px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:2px 10px 8px"></div>
   </div>
@@ -152,7 +152,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <ul style="list-style:none;font-size:32px;line-height:1.8">
 <li>▸ 场外 DCA 雷打不动</li><li>▸ 场内标普优先 · 纳指次之</li><li>▸ NDX -10~15% 手动加 ¥2k-10k</li><li>▸ 债基锁死不碰</li><li>▸ 宽基不止盈 · 长期持有</li><li>▸ 下跌加投 · 不减持</li></ul>
 <div style="padding:10px;background:rgba(240,176,96,.06);border-left:3px solid var(--gold);border-radius:0 5px 5px 0;font-size:32px;color:#aaa;line-height:1.8">
-<b style="color:var(--gold)">目标配置</b><br>标普500 35% · 纳指100 20% · 中证A500 10%<br>债券 20% · 卫星&个股 5% · 美基 5% · 美股 5%</div>
+<b style="color:var(--gold)">目标配置</b><br>标普500 35% · 纳指100 20% · CGDV 10% · 债券 10%<br>SMH 8% · VGT 7% · A500 10% · 卫星个股 5%</div>
 </div></div></div></div>
 
 <!-- Color Picker -->
@@ -183,7 +183,7 @@ async function cloudLoad(){try{const r=await fetch(SUPABASE_URL+'/rest/v1/holdin
 let _cloudTimer;
 function cloudSave(arr){clearTimeout(_cloudTimer);_cloudTimer=setTimeout(async()=>{try{await fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{method:'PATCH',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString()})});}catch(e){}},500);}
 
-const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},csi_a500:{tgt:10,c:'#f472b6',l:'中证A500'},bond:{tgt:20,c:'#f0b060',l:'债券'},satellite:{tgt:5,c:'#a78bfa',l:'卫星&个股'},cdgv:{tgt:5,c:'#34d399',l:'美基'},vgt:{tgt:5,c:'#fb923c',l:'美股'}};
+const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},cdgv:{tgt:10,c:'#34d399',l:'CGDV'},bond:{tgt:10,c:'#f0b060',l:'债券'},smh:{tgt:8,c:'#22d3ee',l:'SMH'},vgt:{tgt:7,c:'#fb923c',l:'VGT'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},satellite:{tgt:5,c:'#a78bfa',l:'卫星个股'}};
 const CL={};for(const[k,v]of Object.entries(CATS))CL[k]=v.l;
 CL.cash='货基';CL.stock='个股';CL.other='其他';
 
@@ -438,16 +438,16 @@ function drawTargetChart(){
     const act=actual[key]||0,actPct=total>0?(act/total*100):0,gap=actPct-cfg.tgt;
     const aw=Math.max(0,(actPct/maxPct)*100);
     const gColor=gap>=0?'#f43f5e':'#3dd68c',gSign=gap>=0?'+':'';
-    return'<div style="display:flex;align-items:center;gap:6px;padding:21px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:'+(cfg.l.length>4?'15':'17')+'px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
+    return'<div style="display:flex;align-items:center;gap:6px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="width:78px;font-size:'+(cfg.l.length>4?'15':'17')+'px;color:'+cfg.c+';font-weight:900;text-align:left;flex-shrink:0">'+cfg.l+'</span><div style="flex:1;position:relative;height:44px"><div style="position:absolute;inset:0;background:transparent;border-radius:3px;overflow:hidden"><div class="bar-flow" style="height:100%;width:'+aw+'%;background:linear-gradient(90deg,'+cfg.c+'44,'+cfg.c+','+cfg.c+'cc,'+cfg.c+','+cfg.c+'44);border-radius:3px;transition:width 0.5s"></div></div><div style="position:absolute;top:-2px;bottom:-2px;left:'+(cfg.tgt/maxPct*100)+'%;width:1px;background:transparent;border-left:1px dashed #f43f5e;border-radius:0;opacity:0.8"></div></div><span style="width:44px;font-size:14px;color:#333;text-align:right;flex-shrink:0">'+actPct.toFixed(1)+'%</span><span style="width:38px;font-size:13px;color:#aaa;text-align:right;flex-shrink:0;font-size:13px">/ '+cfg.tgt+'%</span><span style="width:44px;font-size:13px;color:'+gColor+';text-align:right;flex-shrink:0">'+gSign+Math.abs(gap).toFixed(1)+'%</span></div>';
   }).join('');
   el.innerHTML='<div style="padding:0;font-family:\'Microsoft YaHei\',sans-serif">'+rows+'</div>';
 }
 
 function drawAllocPie(){
   const el=document.getElementById('allocPiePanel');if(!el)return;
-  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},债券:{t:['bond'],c:'#f0b060',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},'卫星&个股':{t:['satellite'],c:'#a78bfa',v:0},美股:{t:['cdgv','vgt'],c:'#34d399',v:0},货基:{t:['cash'],c:'#6b7280',v:0}};
+  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},CGDV:{t:['cdgv'],c:'#34d399',v:0},债券:{t:['bond'],c:'#f0b060',v:0},SMH:{t:['smh'],c:'#22d3ee',v:0},VGT:{t:['vgt'],c:'#fb923c',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},卫星个股:{t:['satellite'],c:'#a78bfa',v:0}};
   for(const h of holdings){const px=priceCache[h.code]?.price||h.avgCost||1;let v=toCNY(h,getHoldingValue(h,px));const cat=Object.entries(groups).find(([,g])=>g.t.includes(h.type));if(cat)cat[1].v+=v;}
-  const entries=Object.entries(groups).filter(([,g])=>g.v>0).sort((a,b)=>b[1].v-a[1].v);
+  const entries=Object.entries(groups).sort((a,b)=>b[1].v-a[1].v);
   const total=entries.reduce((s,e)=>s+e[1].v,0)||1;
   el.innerHTML='<div style="display:flex;flex-direction:column;gap:6px;padding:0 8px 8px 0;margin:-12px 0 0 0;justify-content:center;height:100%">'+entries.map(([k,g])=>{const pct=g.v/total*100;return'<div style="display:flex;align-items:center;gap:120px;padding:2px 10px 2px 0;background:'+g.c+'11;border-left:4px solid '+g.c+';border-radius:0 6px 6px 0"><span style="font-size:15px;color:#334155;font-weight:600;flex:1;margin-left:8px">'+k+'</span><span style="font-size:16px;color:#1d4ed8;font-weight:bold">'+pct.toFixed(1)+'%</span><span style="font-size:13px;color:#f43f5e">¥'+(g.v/10000).toFixed(1)+'万</span></div>';}).join('')+'</div>';
 }
@@ -502,7 +502,7 @@ function drawCalendar(){
   html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center">';
   for(const w of weekdays)html+='<div style="font-size:11px;color:#666;padding:2px 0">'+w+'</div>';
   for(let i=0;i<firstDay;i++)html+='<div></div>';
-  for(let d=1;d<=daysInMonth;d++){const ds=y+'-'+(m+1).toString().padStart(2,'0')+'-'+d.toString().padStart(2,'0');const pnl=dailyPnL[ds];const isToday=ds===todayStr;let bg='',color='#aaa',weight='';if(pnl!=null){const intensity=Math.min(Math.abs(pnl)/maxAbs,1),alpha=0.15+intensity*0.55;if(pnl>0){bg='rgba(244,63,94,'+alpha+')';color='#f43f5e';weight='font-weight:bold'}else if(pnl<0){bg='rgba(61,214,140,'+alpha+')';color='#3dd68c';weight='font-weight:bold'}}const border=isToday?'border:2px solid #2563eb;background:#eff6ff':'';const num=pnl!=null?Math.round(Math.abs(pnl)).toLocaleString():'--';html+='<div style="padding:4px 2px;border-radius:5px;'+bg+';'+border+';'+weight+'"><div style="color:#334155;font-size:14px;font-weight:bold">'+d+'</div><div style="color:'+color+';font-size:14px;margin-top:2px;font-weight:bold">'+num+'</div></div>';}
+  for(let d=1;d<=daysInMonth;d++){const ds=y+'-'+(m+1).toString().padStart(2,'0')+'-'+d.toString().padStart(2,'0');const pnl=dailyPnL[ds];const isToday=ds===todayStr;let bg='',color='#aaa',weight='';if(pnl!=null){const intensity=Math.min(Math.abs(pnl)/maxAbs,1),alpha=0.15+intensity*0.55;if(pnl>0){bg='rgba(244,63,94,'+alpha+')';color='#f43f5e';weight='font-weight:bold'}else if(pnl<0){bg='rgba(61,214,140,'+alpha+')';color='#3dd68c';weight='font-weight:bold'}}const border=isToday?'border:2px solid #2563eb;background:#eff6ff':'';const num=pnl!=null?Math.round(Math.abs(pnl)).toLocaleString():'--';html+='<div style="padding:4px 2px;border-radius:5px;'+bg+';'+border+';'+weight+'"><div style="color:#334155;font-size:11px;font-weight:bold">'+d+'</div><div style="color:'+color+';font-size:14px;margin-top:2px;font-weight:bold">'+num+'</div></div>';}
   html+='</div>';el.innerHTML=html;saveDailyPnL();
 }
 
