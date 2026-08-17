@@ -418,8 +418,8 @@ function renderHoldings(){
   const set=(id,v,h)=>{const el=document.getElementById(id);if(el){if(h)el.innerHTML=v;else el.textContent=v;}};
   set('totalValue','¥'+Math.round(tv).toLocaleString());set('totalCost','¥'+Math.round(tc).toLocaleString());
   const tCls=tdy>=0?'up':'down',tSign=tdy>=0?'+':'',tBg=tdy>=0?'rgba(244,63,94,.15)':'rgba(61,214,140,.15)',tBorder=tdy>=0?'rgba(244,63,94,.4)':'rgba(61,214,140,.4)';
-  set('totalPnL','<span class="'+cls+'" style="font-size:26px">'+s+'¥'+Math.round(Math.abs(net)).toLocaleString()+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+s+np.toFixed(2)+'%</span>',1);
-  set('totalPnLPct','',1);
+  set('totalPnL','<span class="'+cls+'" style="font-size:26px">'+s+'¥'+Math.round(Math.abs(net)).toLocaleString()+'</span>',1);
+  set('totalPnLPct','<span class="'+cls+'">'+s+np.toFixed(2)+'%</span>',1);
   set('todayPnL','<span style="color:#fff;background:'+tBg+';border:1px solid '+tBorder+';border-radius:6px;padding:2px 10px;display:inline-block">'+tSign+'¥'+Math.round(Math.abs(tdy)).toLocaleString()+'</span>',1);
   set('todayPnLPct','<span style="color:#ccc;font-size:13px">'+tSign+(tc>0?(tdy/tc*100).toFixed(2):0)+'%</span>',1);
   set('labelToday','📉 今日盈亏',0);set('totalChange','');set('holdingCount',(filter?sorted.length+'/'+holdings.length:holdings.length)+' 条');
@@ -588,26 +588,21 @@ async function init(){
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
   renderAll();refreshAll();setInterval(refreshAll,60000);
-  // 云端同步: 优先拉取云端最新持仓
+  // 云端同步: 仅当本地无数据时才从云端拉取
   try{
-    const cloud=await cloudLoad();
-    if(cloud&&cloud.holdings&&cloud.holdings.length){
-      const cloudUpdated=cloud.updated_at?new Date(cloud.updated_at).getTime():0;
-      const localUpdated=localStorage.getItem(SK_H+'_ts')?parseInt(localStorage.getItem(SK_H+'_ts')):0;
-      if(cloudUpdated>localUpdated){
+    const hasLocal=localStorage.getItem(SK_H)!=null;
+    if(!hasLocal){
+      const cloud=await cloudLoad();
+      if(cloud&&cloud.holdings&&cloud.holdings.length){
         holdings=cloud.holdings;
         sv(SK_H,holdings);
-        localStorage.setItem(SK_H+'_ts',String(cloudUpdated));
         renderAll();
-      }else{
-        cloudSave(holdings);
       }
     }else{
+      // 本地有数据, 推送到云端
       cloudSave(holdings);
     }
   }catch(e){}
-  // 定时拉取云端更新(轮询同步)
-  setInterval(async()=>{try{const c=await cloudLoad();if(c&&c.holdings&&c.holdings.length&&c.updated_at){const cu=new Date(c.updated_at).getTime();const lu=localStorage.getItem(SK_H+'_ts')?parseInt(localStorage.getItem(SK_H+'_ts')):0;if(cu>lu){holdings=c.holdings;sv(SK_H,holdings);localStorage.setItem(SK_H+'_ts',String(cu));renderAll();}}}catch(e){}},15000);
 }
 init();
 </script>
