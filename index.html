@@ -152,7 +152,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <ul style="list-style:none;font-size:32px;line-height:1.8">
 <li>▸ 场外 DCA 雷打不动</li><li>▸ 场内标普优先 · 纳指次之</li><li>▸ NDX -10~15% 手动加 ¥2k-10k</li><li>▸ 债基锁死不碰</li><li>▸ 宽基不止盈 · 长期持有</li><li>▸ 下跌加投 · 不减持</li></ul>
 <div style="padding:10px;background:rgba(240,176,96,.06);border-left:3px solid var(--gold);border-radius:0 5px 5px 0;font-size:32px;color:#aaa;line-height:1.8">
-<b style="color:var(--gold)">目标配置</b><br>标普500 35% · 纳指100 20% · CGDV 10% · 债券 10%<br>SMH 8% · VGT 7% · A500 10% · 卫星个股 5%</div>
+<b style="color:var(--gold)">目标配置</b><br>标普500 35% · 纳指100 20% · CGDV 10% · 债券 15%<br>SMH 3% · VGT 2% · A500 10% · 卫星个股 5%</div>
 </div></div></div></div>
 
 <!-- Color Picker -->
@@ -180,10 +180,9 @@ const SUPABASE_URL='https://klhbsfxgkkahbnvlsaqy.supabase.co';
 const SUPABASE_KEY='sb_publishable_XHW7IUfu-9GJQT8mwUqptg_4Rfyd4W1';
 const _supH={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY};
 async function cloudLoad(){try{const r=await fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1&select=holdings,updated_at',{headers:_supH});const d=await r.json();if(d&&d.length&&d[0].holdings&&d[0].holdings.length)return d[0];}catch(e){}return null;}
-let _cloudTimer;
-function cloudSave(arr){clearTimeout(_cloudTimer);_cloudTimer=setTimeout(async()=>{try{await fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{method:'PATCH',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString()})});}catch(e){}},500);}
+function cloudSave(arr){try{fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{method:'PATCH',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString()})});}catch(e){}}
 
-const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},cdgv:{tgt:10,c:'#34d399',l:'CGDV'},bond:{tgt:10,c:'#f0b060',l:'债券'},smh:{tgt:8,c:'#22d3ee',l:'SMH'},vgt:{tgt:7,c:'#fb923c',l:'VGT'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},satellite:{tgt:5,c:'#a78bfa',l:'卫星个股'}};
+const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},cdgv:{tgt:10,c:'#34d399',l:'CGDV'},bond:{tgt:15,c:'#f0b060',l:'债券'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},vgt:{tgt:2,c:'#fb923c',l:'VGT'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},satellite:{tgt:5,c:'#a78bfa',l:'卫星个股'}};
 const CL={};for(const[k,v]of Object.entries(CATS))CL[k]=v.l;
 CL.cash='货基';CL.stock='个股';CL.other='其他';
 
@@ -588,18 +587,14 @@ async function init(){
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
   renderAll();refreshAll();setInterval(refreshAll,60000);
-  // 云端同步: 仅当本地无数据时才从云端拉取
+  // 云端同步: 始终拉取云端最新数据(云端为准), 无数据才推本地
   try{
-    const hasLocal=localStorage.getItem(SK_H)!=null;
-    if(!hasLocal){
-      const cloud=await cloudLoad();
-      if(cloud&&cloud.holdings&&cloud.holdings.length){
-        holdings=cloud.holdings;
-        sv(SK_H,holdings);
-        renderAll();
-      }
+    const cloud=await cloudLoad();
+    if(cloud&&cloud.holdings&&cloud.holdings.length){
+      holdings=cloud.holdings;
+      localStorage.setItem(SK_H,JSON.stringify(holdings));
+      renderAll();
     }else{
-      // 本地有数据, 推送到云端
       cloudSave(holdings);
     }
   }catch(e){}
