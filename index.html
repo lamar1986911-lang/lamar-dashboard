@@ -119,11 +119,11 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
     </div>
   </div>
   <div style="display:flex;gap:14px">
-    <div id="dailyCalendar" style="flex:1;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:12px;min-height:200px"></div>
+    <div id="dailyCalendar" style="flex:1;background:#fff;border:1px solid #ffffff;border-radius:10px;padding:12px;min-height:200px"></div>
     <div id="top3Panel" style="flex:1.4;display:flex;flex-direction:column;gap:4px;background:#f5f5f5;border:1px solid #ddd;border-radius:10px;padding:10px;min-height:260px;color:#222"></div>
   </div>
-  <div style="display:flex;gap:12px;margin-top:-16px">
-    <div id="allocPiePanel" style="flex:1;min-height:280px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:2px 12px 12px;display:flex;align-items:flex-start;justify-content:center"></div>
+  <div style="display:flex;gap:12px;margin-top:-70px">
+    <div id="allocPiePanel" style="flex:1;min-height:280px;background:#fff;border:1px solid #ffffff;border-radius:10px;padding:2px 12px 12px;display:flex;align-items:flex-start;justify-content:center"></div>
     <div id="valuationBar" style="flex:1.4;display:flex;flex-direction:column;gap:5px;min-width:280px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:2px 10px 8px"></div>
   </div>
 </div>
@@ -152,7 +152,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <ul style="list-style:none;font-size:32px;line-height:1.8">
 <li>▸ 场外 DCA 雷打不动</li><li>▸ 场内标普优先 · 纳指次之</li><li>▸ NDX -10~15% 手动加 ¥2k-10k</li><li>▸ 债基锁死不碰</li><li>▸ 宽基不止盈 · 长期持有</li><li>▸ 下跌加投 · 不减持</li></ul>
 <div style="padding:10px;background:rgba(240,176,96,.06);border-left:3px solid var(--gold);border-radius:0 5px 5px 0;font-size:32px;color:#aaa;line-height:1.8">
-<b style="color:var(--gold)">目标配置</b><br>标普500 35% · 纳指100 20% · CGDV 10% · 债券 15%<br>SMH 3% · VGT 2% · A500 10% · 卫星个股 5%</div>
+<b style="color:var(--gold)">目标配置</b><br>标普500 30% · 纳指100 20% · 债券 15% · A500 10%<br>SMH 3% · SCHD 10% · SGOV 7% · 价值个股 5%</div>
 </div></div></div></div>
 
 <!-- Color Picker -->
@@ -182,37 +182,34 @@ const _supH={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY};
 async function cloudLoad(){try{const r=await fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1&select=holdings,updated_at,realized_pnl',{headers:_supH});const d=await r.json();if(d&&d.length&&d[0].holdings&&d[0].holdings.length)return d[0];}catch(e){}return null;}
 function cloudSave(arr){try{fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{method:'PATCH',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString(),realized_pnl:realizedPnL})});}catch(e){}}
 
-const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},cdgv:{tgt:10,c:'#34d399',l:'CGDV'},bond:{tgt:15,c:'#f0b060',l:'债券'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},vgt:{tgt:2,c:'#fb923c',l:'VGT'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},satellite:{tgt:5,c:'#a78bfa',l:'卫星个股'}};
+const CATS={sp500:{tgt:30,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},bond:{tgt:15,c:'#f0b060',l:'债券'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},schd:{tgt:10,c:'#34d399',l:'SCHD'},sgov:{tgt:7,c:'#fb923c',l:'SGOV'},value:{tgt:5,c:'#a78bfa',l:'价值个股'}};
 const CL={};for(const[k,v]of Object.entries(CATS))CL[k]=v.l;
-CL.cash='货基';CL.stock='个股';CL.other='其他';
+CL.cdgv='CGDV';CL.vgt='VGT';CL.satellite='卫星个股';CL.cash='货基';CL.stock='个股';CL.other='其他';
 
 const defaultHoldings=[
-  {id:'1',code:'020084',name:'纯债D',type:'bond',shares:281647.88,avgCost:1.1112,totalInvested:312967.12,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'2',code:'110051',name:'短债',type:'bond',shares:313020.08,avgCost:1.0542,totalInvested:329985.77,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'4',code:'002969',name:'丰和债A',type:'bond',shares:609.11,avgCost:1.6433,totalInvested:1000.95,dcaAmt:0,currency:'CNY',start:'2026-07'},
-  {id:'5',code:'021000',name:'南方纳指QDII',type:'nasdaq100',shares:61807.26604338862,avgCost:2.231297529050825,totalInvested:137910.4,dcaAmt:200,currency:'CNY',start:'2026-03'},
-  {id:'6',code:'021778',name:'广发纳指QDII',type:'nasdaq100',shares:6140.546922193729,avgCost:8.28838711679733,totalInvested:50895.23,dcaAmt:100,currency:'CNY',start:'2026-03'},
-  {id:'7',code:'018738',name:'标普QDII',type:'sp500',shares:11653.550030555747,avgCost:5.322408179256093,totalInvested:62024.95,dcaAmt:200,currency:'CNY',start:'2026-06'},
-  {id:'10',code:'sh513500',name:'标普ETF',type:'sp500',shares:15300,avgCost:2.625,totalInvested:40162.5,dcaAmt:0,currency:'CNY',start:'2026-07'},
-  {id:'11',code:'sh513100',name:'纳指ETF',type:'nasdaq100',shares:2900,avgCost:2.18,totalInvested:6322,dcaAmt:0,currency:'CNY',start:'2026-07'},
-  {id:'12',code:'022459',name:'A500',type:'csi_a500',shares:10430.048773154276,avgCost:1.3075528500980937,totalInvested:13637.84,dcaAmt:80,currency:'CNY',start:'2026-07'},
-  {id:'13',code:'018147',name:'建信QDII',type:'satellite',shares:887.588688228223,avgCost:2.253104423842984,totalInvested:1999.83,dcaAmt:100,currency:'CNY',start:'2026-05'},
+  {id:'1',code:'020084',name:'纯债D',type:'bond',shares:281647.88,avgCost:1.1112,totalInvested:312967.124256,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'2',code:'110051',name:'短债',type:'bond',shares:313020.08,avgCost:1.0542,totalInvested:329985.76833600004,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'5',code:'021000',name:'南方纳指QDII',type:'nasdaq100',shares:61807.26604338862,avgCost:2.231297529050825,totalInvested:137910.4,dcaAmt:100,currency:'CNY',start:'2026-03'},
+  {id:'6',code:'021778',name:'广发纳指QDII',type:'nasdaq100',shares:6140.546922193729,avgCost:8.28838711679733,totalInvested:50895.229999999996,dcaAmt:100,currency:'CNY',start:'2026-03'},
+  {id:'7',code:'018738',name:'标普QDII',type:'sp500',shares:11653.550030555747,avgCost:5.322408179256093,totalInvested:62024.95,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'10',code:'sh513500',name:'标普ETF',type:'sp500',shares:28400,avgCost:2.678,totalInvested:76055.2,dcaAmt:0,currency:'CNY',start:'2026-07'},
+  {id:'11',code:'sh513100',name:'纳指ETF',type:'nasdaq100',shares:11700,avgCost:2.236,totalInvested:26161.2,dcaAmt:0,currency:'CNY',start:'2026-07'},
+  {id:'12',code:'022459',name:'A500',type:'csi_a500',shares:10554.03,avgCost:1.3072,totalInvested:13796.228016,dcaAmt:20,currency:'CNY',start:'2026-07'},
+  {id:'13',code:'018147',name:'建信QDII',type:'satellite',shares:1106.588688228223,avgCost:2.243104423842984,totalInvested:2482.1939819393315,dcaAmt:20,currency:'CNY',start:'2026-05'},
   {id:'14',code:'008281',name:'半导体ETF',type:'satellite',shares:3045.228782960211,avgCost:2.8306576005828554,totalInvested:8620,dcaAmt:20,currency:'CNY',start:'2026-05'},
-  {id:'15',code:'026228',name:'富国QDII',type:'satellite',shares:2439.005643641857,avgCost:5.479023812362392,totalInvested:13363.37,dcaAmt:20,currency:'CNY',start:'2026-05'},
-  {id:'16',code:'002891',name:'华夏互联',type:'satellite',shares:613.418462103657,avgCost:2.859858495265758,totalInvested:1754.29,dcaAmt:50,currency:'CNY',start:'2026-05'},
-  {id:'17',code:'270023',name:'广发科技QDII',type:'satellite',shares:2337.2792341665304,avgCost:6.336820942698166,totalInvested:14810.92,dcaAmt:20,currency:'CNY',start:'2026-05'},
-  {id:'18',code:'sz002938',name:'鹏鼎控股',type:'satellite',shares:400,avgCost:85.1,totalInvested:34040,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'h_1786247033291',code:'024450',name:'易方达混合A',type:'satellite',shares:7018.8,avgCost:1.8838,totalInvested:13222.02,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'h_1786264585343',code:'KO',name:'可口可乐',type:'vgt',shares:8,avgCost:81.07,totalInvested:648.56,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264667041',code:'NYT',name:'纽约时报',type:'vgt',shares:4,avgCost:73.85,totalInvested:295.4,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264727182',code:'ORCL',name:'甲骨文',type:'vgt',shares:3,avgCost:192.08,totalInvested:576.24,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264754490',code:'AAPL',name:'苹果',type:'vgt',shares:4,avgCost:310.87,totalInvested:1243.48,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264785543',code:'GOOGL',name:'谷歌A',type:'vgt',shares:0.34835,avgCost:335.38,totalInvested:116.83,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264804756',code:'CGDV',name:'CGDV',type:'cdgv',shares:17.94471212876781,avgCost:51.25353883641008,totalInvested:919.73,dcaAmt:100,currency:'USD',start:'2026-06'},
-  {id:'h_1786264865472',code:'VGT',name:'VGT',type:'vgt',shares:1.1639560929811585,avgCost:120.27945112725678,totalInvested:140,dcaAmt:16,currency:'USD',start:'2026-06'},
-  {id:'h_1786264894692',code:'005698',name:'华夏科技',type:'satellite',shares:5745.42,avgCost:3.3277,totalInvested:19119.03,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'h_1786266549712',code:'020602',name:'红利低波',type:'csi_a500',shares:2721.8675818164666,avgCost:1.0650525971088451,totalInvested:2898.93,dcaAmt:300,currency:'CNY',start:'2026-06'},
-  {id:'h_1786270977338',code:'sz159509',name:'纳指科技ETF',type:'nasdaq100',shares:3400,avgCost:2.818,totalInvested:9581.2,dcaAmt:0,currency:'CNY',start:'2026-06'}
+  {id:'15',code:'026228',name:'富国QDII',type:'satellite',shares:2439.005643641857,avgCost:5.479023812362392,totalInvested:13363.369999999999,dcaAmt:0,currency:'CNY',start:'2026-05'},
+  {id:'16',code:'002891',name:'华夏互联',type:'satellite',shares:613.418462103657,avgCost:2.859858495265758,totalInvested:1754.2900000000002,dcaAmt:50,currency:'CNY',start:'2026-05'},
+  {id:'17',code:'270023',name:'广发科技QDII',type:'satellite',shares:2337.2792341665304,avgCost:6.336820942698166,totalInvested:14810.92,dcaAmt:0,currency:'CNY',start:'2026-05'},
+  {id:'h_1786264585343',code:'KO',name:'可口可乐',type:'satellite',shares:15,avgCost:84.5187,totalInvested:1267.7804999999998,dcaAmt:0,currency:'USD',start:'2026-06'},
+  {id:'h_1786264667041',code:'NYT',name:'纽约时报',type:'satellite',shares:4,avgCost:73.85,totalInvested:295.4,dcaAmt:0,currency:'USD',start:'2026-06'},
+  {id:'h_1786264754490',code:'AAPL',name:'苹果',type:'satellite',shares:4,avgCost:310.87,totalInvested:1243.48,dcaAmt:0,currency:'USD',start:'2026-06'},
+  {id:'h_1786264785543',code:'GOOGL',name:'谷歌A',type:'satellite',shares:0.34835,avgCost:335.38,totalInvested:116.829623,dcaAmt:0,currency:'USD',start:'2026-06'},
+  {id:'h_1786264804756',code:'CGDV',name:'CGDV',type:'cdgv',shares:21.865134057309543,avgCost:51.210753936615944,totalInvested:1119.73,dcaAmt:45,currency:'USD',start:'2026-06'},
+  {id:'h_1786264865472',code:'VGT',name:'VGT',type:'vgt',shares:1.2771,avgCost:120.6327,totalInvested:154.06002117,dcaAmt:15,currency:'USD',start:'2026-06'},
+  {id:'h_1786264894692',code:'005698',name:'华夏科技',type:'satellite',shares:5745.42,avgCost:3.3277,totalInvested:19119.034134,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'h_1786266549712',code:'020602',name:'红利低波',type:'csi_a500',shares:4512.88,avgCost:1.0634,totalInvested:4798.9965919999995,dcaAmt:300,currency:'CNY',start:'2026-06'},
+  {id:'h_1786270977338',code:'sz159509',name:'纳指科技ETF',type:'nasdaq100',shares:4200,avgCost:2.815,totalInvested:11823,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'h_1787011675777',code:'SMH',name:'SMH',type:'smh',shares:0.055,avgCost:599.8182,totalInvested:32.990001,dcaAmt:15,currency:'USD',start:'2026-08'}
 ];
 
 function ld(k,f){try{const r=localStorage.getItem(k);if(r)return JSON.parse(r);}catch(e){}return f?JSON.parse(JSON.stringify(f)):null;}
@@ -445,7 +442,7 @@ function drawTargetChart(){
 
 function drawAllocPie(){
   const el=document.getElementById('allocPiePanel');if(!el)return;
-  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},CGDV:{t:['cdgv'],c:'#34d399',v:0},债券:{t:['bond'],c:'#f0b060',v:0},SMH:{t:['smh'],c:'#22d3ee',v:0},VGT:{t:['vgt'],c:'#fb923c',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},卫星个股:{t:['satellite'],c:'#a78bfa',v:0}};
+  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},债券:{t:['bond'],c:'#f0b060',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},SMH:{t:['smh'],c:'#22d3ee',v:0},SCHD:{t:['schd'],c:'#34d399',v:0},SGOV:{t:['sgov'],c:'#fb923c',v:0},价值个股:{t:['value'],c:'#a78bfa',v:0},CGDV:{t:['cdgv'],c:'#c084fc',v:0},VGT:{t:['vgt'],c:'#e8794c',v:0},卫星个股:{t:['satellite'],c:'#94a3b8',v:0}};
   for(const h of holdings){const px=priceCache[h.code]?.price||h.avgCost||1;let v=toCNY(h,getHoldingValue(h,px));const cat=Object.entries(groups).find(([,g])=>g.t.includes(h.type));if(cat)cat[1].v+=v;}
   const entries=Object.entries(groups).sort((a,b)=>b[1].v-a[1].v);
   const total=entries.reduce((s,e)=>s+e[1].v,0)||1;
@@ -498,11 +495,11 @@ function drawCalendar(){
   const now=new Date(),y=now.getFullYear(),m=now.getMonth(),firstDay=new Date(y,m,1).getDay(),daysInMonth=new Date(y,m+1,0).getDate(),todayStr=getToday();
   const weekdays=['日','一','二','三','四','五','六'];
   let maxAbs=0;for(let d=1;d<=daysInMonth;d++){const ds=y+'-'+(m+1).toString().padStart(2,'0')+'-'+d.toString().padStart(2,'0');const p=dailyPnL[ds];if(p!=null)maxAbs=Math.max(maxAbs,Math.abs(p));}if(maxAbs===0)maxAbs=1;
-  let html='<div style="font-weight:bold;color:#1d4ed8;font-size:16px;margin-bottom:8px">📅 '+y+'年'+(m+1)+'月 日收益</div>';
+  let html='<div style="font-weight:bold;color:#1d4ed8;font-size:12px;margin-bottom:4px">📅 '+y+'年'+(m+1)+'月 日收益</div>';
   html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center">';
-  for(const w of weekdays)html+='<div style="font-size:11px;color:#666;padding:2px 0">'+w+'</div>';
+  for(const w of weekdays)html+='<div style="font-size:8px;color:#666;padding:1px 0">'+w+'</div>';
   for(let i=0;i<firstDay;i++)html+='<div></div>';
-  for(let d=1;d<=daysInMonth;d++){const ds=y+'-'+(m+1).toString().padStart(2,'0')+'-'+d.toString().padStart(2,'0');const pnl=dailyPnL[ds];const isToday=ds===todayStr;let bg='',color='#aaa',weight='';if(pnl!=null){const intensity=Math.min(Math.abs(pnl)/maxAbs,1),alpha=0.15+intensity*0.55;if(pnl>0){bg='rgba(244,63,94,'+alpha+')';color='#f43f5e';weight='font-weight:bold'}else if(pnl<0){bg='rgba(61,214,140,'+alpha+')';color='#3dd68c';weight='font-weight:bold'}}const border=isToday?'border:2px solid #2563eb;background:#eff6ff':'';const num=pnl!=null?Math.round(Math.abs(pnl)).toLocaleString():'--';html+='<div style="padding:4px 2px;border-radius:5px;'+bg+';'+border+';'+weight+'"><div style="color:#334155;font-size:11px;font-weight:bold">'+d+'</div><div style="color:'+color+';font-size:14px;margin-top:2px;font-weight:bold">'+num+'</div></div>';}
+  for(let d=1;d<=daysInMonth;d++){const ds=y+'-'+(m+1).toString().padStart(2,'0')+'-'+d.toString().padStart(2,'0');const pnl=dailyPnL[ds];const isToday=ds===todayStr;let bg='',color='#aaa',weight='';if(pnl!=null){const intensity=Math.min(Math.abs(pnl)/maxAbs,1),alpha=0.15+intensity*0.55;if(pnl>0){bg='rgba(244,63,94,'+alpha+')';color='#f43f5e';weight='font-weight:bold'}else if(pnl<0){bg='rgba(61,214,140,'+alpha+')';color='#3dd68c';weight='font-weight:bold'}}const border=isToday?'border:2px solid #2563eb;background:#eff6ff':'';const num=pnl!=null?Math.round(Math.abs(pnl)).toLocaleString():'--';html+='<div style="padding:2px 1px;border-radius:4px;'+bg+';'+border+';'+weight+'"><div style="color:#334155;font-size:9px;font-weight:bold">'+d+'</div><div style="color:'+color+';font-size:14px;margin-top:1px;font-weight:bold;font-size:10px">'+num+'</div></div>';}
   html+='</div>';el.innerHTML=html;saveDailyPnL();
 }
 
