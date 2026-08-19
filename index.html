@@ -124,7 +124,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
   </div>
   <div style="display:flex;gap:12px;margin-top:-70px">
     <div id="allocPiePanel" style="flex:1;min-height:280px;background:#fff;border:1px solid #ffffff;border-radius:10px;padding:2px 12px 12px;display:flex;align-items:flex-start;justify-content:center"></div>
-    <div id="valuationBar" style="flex:1.4;display:flex;flex-direction:column;gap:5px;min-width:280px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:2px 10px 8px"></div>
+    <div id="catPnlPanel" style="flex:1.4;display:flex;flex-direction:column;gap:5px;min-width:280px;background:#f5f5f5;border:1px solid #ddd;border-radius:10px;padding:10px;color:#222"></div>
   </div>
 </div>
 </div></div></div>
@@ -462,7 +462,7 @@ function renderTop3(){
   const half=Math.ceil(catEntries.length/2);
   const leftCats=catEntries.slice(0,half),rightCats=catEntries.slice(half);
   const renderCatCol=items=>items.map(([t,pnl])=>{const pct=catCost[t]>0?(pnl/catCost[t]*100):0;const cls=pnl>=0?'up':'down',s=pnl>=0?'+':'';const c=CATS[t]?CATS[t].c:'#555';return'<div style="display:flex;align-items:center;gap:8px;font-size:17px;padding:3px 0"><span style="width:12px;height:12px;border-radius:3px;background:'+c+';flex-shrink:0"></span><span style="color:'+(pnl>=0?'#f87171':'#4ade80')+';flex:1">'+(CL[t]||t)+'</span><span style="font-weight:bold;font-size:17px;color:'+(pnl>=0?'#f87171':'#4ade80')+'">'+s+pct.toFixed(1)+'%</span></div>';}).join('');
-  el.innerHTML='<div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1;background:linear-gradient(180deg,rgba(244,63,94,.08),rgba(244,63,94,.02));border:1px solid rgba(244,63,94,.15);border-radius:8px;padding:6px 10px"><div style="color:#ff6b81;font-weight:bold;font-size:17px;margin-bottom:3px">🔴 盈利 TOP5</div>'+(top5.length>0?top5.map((t,i)=>buildRow(t,i+1)).join(''):'<div style="color:#555;font-size:12px">暂无</div>')+'</div><div style="flex:1;background:linear-gradient(180deg,rgba(61,214,140,.08),rgba(61,214,140,.02));border:1px solid rgba(61,214,140,.15);border-radius:8px;padding:6px 10px"><div style="color:#5ce6a0;font-weight:bold;font-size:17px;margin-bottom:3px">🟢 亏损 TOP5</div>'+(bot5.length>0?bot5.map((t,i)=>buildRow(t,i+1)).join(''):'<div style="color:#555;font-size:12px">暂无</div>')+'</div></div><div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 12px"><div style="color:#111;font-weight:bold;font-size:24px;margin-bottom:6px">📊 各类别盈亏率</div><div style="display:flex;gap:16px"><div style="flex:1">'+renderCatCol(leftCats)+'</div><div style="flex:1">'+renderCatCol(rightCats)+'</div></div></div>';
+  el.innerHTML='<div style="display:flex;gap:8px"><div style="flex:1;background:linear-gradient(180deg,rgba(244,63,94,.08),rgba(244,63,94,.02));border:1px solid rgba(244,63,94,.15);border-radius:8px;padding:6px 10px"><div style="color:#ff6b81;font-weight:bold;font-size:17px;margin-bottom:3px">🔴 盈利 TOP5</div>'+(top5.length>0?top5.map((t,i)=>buildRow(t,i+1)).join(''):'<div style="color:#555;font-size:12px">暂无</div>')+'</div><div style="flex:1;background:linear-gradient(180deg,rgba(61,214,140,.08),rgba(61,214,140,.02));border:1px solid rgba(61,214,140,.15);border-radius:8px;padding:6px 10px"><div style="color:#5ce6a0;font-weight:bold;font-size:17px;margin-bottom:3px">🟢 亏损 TOP5</div>'+(bot5.length>0?bot5.map((t,i)=>buildRow(t,i+1)).join(''):'<div style="color:#555;font-size:12px">暂无</div>')+'</div></div>';
 }
 
 function renderValuation(){
@@ -503,7 +503,15 @@ function drawCalendar(){
   html+='</div>';el.innerHTML=html;saveDailyPnL();
 }
 
-function renderAll(){renderIndices();renderHoldings();checkAutoDCA();drawTargetChart();drawCalendar();drawAllocPie();renderTop3();renderValuation();}
+function renderCatPnl(){
+  const el=document.getElementById('catPnlPanel');if(!el)return;
+  const catPnL={};let catCost={};
+  for(const h of holdings){const px=priceCache[h.code]?.price||h.avgCost||1;const mv=toCNY(h,getHoldingValue(h,px));const iv=toCNY(h,h.totalInvested||(h.shares||0)*(h.avgCost||1));const t=h.type||'other';catPnL[t]=(catPnL[t]||0)+(mv-iv);catCost[t]=(catCost[t]||0)+iv;}
+  const entries=Object.entries(catPnL).filter(([,v])=>Math.abs(v)>1).sort((a,b)=>{const pa=catCost[a[0]]>0?a[1]/catCost[a[0]]:0;const pb=catCost[b[0]]>0?b[1]/catCost[b[0]]:0;return pb-pa;});
+  const rows=entries.map(([t,pnl])=>{const pct=catCost[t]>0?(pnl/catCost[t]*100):0;const s=pnl>=0?'+':'';const c=CATS[t]?CATS[t].c:'#555';const color=pnl>=0?'#f87171':'#4ade80';return'<div style="display:flex;align-items:center;gap:10px;font-size:18px;padding:8px 0;border-bottom:1px solid #e5e7eb"><span style="width:14px;height:14px;border-radius:3px;background:'+c+';flex-shrink:0"></span><span style="color:'+color+';flex:1;font-weight:500">'+(CL[t]||t)+'</span><span style="font-weight:bold;font-size:18px;color:'+color+'">'+s+pct.toFixed(1)+'%</span></div>';}).join('');
+  el.innerHTML='<div style="font-weight:bold;font-size:20px;color:#333;margin-bottom:8px">📊 各类别盈亏率</div>'+(rows||'<div style="color:#999">暂无</div>');
+}
+function renderAll(){renderIndices();renderHoldings();checkAutoDCA();drawTargetChart();drawCalendar();drawAllocPie();renderTop3();renderCatPnl();}
 
 // ==================== FETCH ====================
 async function _fetchOne(h){
