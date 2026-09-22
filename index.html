@@ -150,7 +150,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <ul style="list-style:none;font-size:32px;line-height:1.8">
 <li>▸ 场外 DCA 雷打不动</li><li>▸ 场内标普优先 · 纳指次之</li><li>▸ NDX -10~15% 手动加 ¥2k-10k</li><li>▸ 债基锁死不碰</li><li>▸ 宽基不止盈 · 长期持有</li><li>▸ 下跌加投 · 不减持</li></ul>
 <div style="padding:10px;background:rgba(240,176,96,.06);border-left:3px solid var(--gold);border-radius:0 5px 5px 0;font-size:32px;color:#aaa;line-height:1.8">
-<b style="color:var(--gold)">目标配置</b><br>标普500 30% · 纳指100 20% · 债券 15% · A500 10%<br>SMH 3% · SCHD 10% · SGOV 7% · 价值个股 5%</div>
+<b style="color:var(--gold)">目标配置</b><br>标普500 30% · 纳指100 20% · 债券 15% · A500 10%<br>SMH 3% · SCHD 10% · 价值个股 5%</div>
 </div></div></div></div>
 
 <!-- Color Picker -->
@@ -180,9 +180,9 @@ const _supH={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY};
 async function cloudLoad(){try{const r=await fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1&select=holdings,updated_at,realized_pnl',{headers:_supH});const d=await r.json();if(d&&d.length&&d[0].holdings&&d[0].holdings.length)return d[0];}catch(e){}return null;}
 function cloudSave(arr){try{fetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{method:'PATCH',headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString(),realized_pnl:realizedPnL})});}catch(e){}}
 
-const CATS={sp500:{tgt:30,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:20,c:'#4dabf7',l:'纳指100'},bond:{tgt:15,c:'#f0b060',l:'债券'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},schd:{tgt:10,c:'#34d399',l:'SCHD'},sgov:{tgt:7,c:'#fb923c',l:'SGOV'},value:{tgt:5,c:'#a78bfa',l:'价值个股'}};
+const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:22,c:'#4dabf7',l:'纳指100'},bond:{tgt:15,c:'#f0b060',l:'债券'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},schd:{tgt:10,c:'#34d399',l:'SCHD'},value:{tgt:5,c:'#a78bfa',l:'价值个股'}};
 const CL={};for(const[k,v]of Object.entries(CATS))CL[k]=v.l;
-CL.cdgv='CGDV';CL.vgt='VGT';CL.satellite='卫星个股';CL.cash='货基';CL.stock='个股';CL.other='其他';
+CL.vgt='VGT';CL.satellite='卫星个股';CL.cash='货基';CL.stock='个股';CL.other='其他';
 
 const defaultHoldings=[
   {id:'1',code:'020084',name:'纯债D',type:'bond',shares:281647.88,avgCost:1.1112,totalInvested:312967.124256,dcaAmt:0,currency:'CNY',start:'2026-06'},
@@ -202,7 +202,6 @@ const defaultHoldings=[
   {id:'h_1786264667041',code:'NYT',name:'纽约时报',type:'value',shares:4,avgCost:73.85,totalInvested:295.4,dcaAmt:0,currency:'USD',start:'2026-06'},
   {id:'h_1786264754490',code:'AAPL',name:'苹果',type:'value',shares:4,avgCost:310.87,totalInvested:1243.48,dcaAmt:0,currency:'USD',start:'2026-06'},
   {id:'h_1786264785543',code:'GOOGL',name:'谷歌A',type:'value',shares:0.34835,avgCost:335.38,totalInvested:116.829623,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264804756',code:'CGDV',name:'CGDV',type:'cdgv',shares:29.290159350153075,avgCost:50.864310268500255,totalInvested:1489.823753,dcaAmt:10,currency:'USD',start:'2026-06'},
   {id:'h_1786264865472',code:'VGT',name:'VGT',type:'vgt',shares:2.4145,avgCost:120.1615,totalInvested:290.12994175,dcaAmt:10,currency:'USD',start:'2026-06'},
   {id:'h_1786264894692',code:'005698',name:'华夏科技',type:'satellite',shares:5745.42,avgCost:3.3277,totalInvested:19119.034134,dcaAmt:0,currency:'CNY',start:'2026-06'},
   {id:'h_1786266549712',code:'020602',name:'红利低波',type:'csi_a500',shares:10302.13,avgCost:1.0671,totalInvested:10993.402922999998,dcaAmt:300,currency:'CNY',start:'2026-06'},
@@ -442,7 +441,7 @@ function drawTargetChart(){
 
 function drawAllocPie(){
   const el=document.getElementById('allocPiePanel');if(!el)return;
-  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},债券:{t:['bond'],c:'#f0b060',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},SMH:{t:['smh'],c:'#22d3ee',v:0},SCHD:{t:['schd'],c:'#34d399',v:0},SGOV:{t:['sgov'],c:'#fb923c',v:0},价值个股:{t:['value'],c:'#a78bfa',v:0},CGDV:{t:['cdgv'],c:'#c084fc',v:0},VGT:{t:['vgt'],c:'#e8794c',v:0},卫星个股:{t:['satellite'],c:'#94a3b8',v:0}};
+  const groups={标普500:{t:['sp500'],c:'#2563eb',v:0},纳指100:{t:['nasdaq100'],c:'#4dabf7',v:0},债券:{t:['bond'],c:'#f0b060',v:0},A500:{t:['csi_a500'],c:'#f472b6',v:0},SMH:{t:['smh'],c:'#22d3ee',v:0},SCHD:{t:['schd'],c:'#34d399',v:0},价值个股:{t:['value'],c:'#a78bfa',v:0},VGT:{t:['vgt'],c:'#e8794c',v:0},卫星个股:{t:['satellite'],c:'#94a3b8',v:0}};
   for(const h of holdings){const px=priceCache[h.code]?.price||h.avgCost||1;let v=toCNY(h,getHoldingValue(h,px));const cat=Object.entries(groups).find(([,g])=>g.t.includes(h.type));if(cat)cat[1].v+=v;}
   const entries=Object.entries(groups).sort((a,b)=>b[1].v-a[1].v);
   const total=entries.reduce((s,e)=>s+e[1].v,0)||1;
