@@ -173,7 +173,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <script src="valuation_data.js"></script>
 <script>
 // ==================== DATA ====================
-const SK_H='lamar_h_v6',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1',SK_RPNL='lamar_rpnl_v1';
+const SK_H='lamar_h_v12',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1',SK_RPNL='lamar_rpnl_v1';
 const SUPABASE_URL='https://klhbsfxgkkahbnvlsaqy.supabase.co';
 const SUPABASE_KEY='sb_publishable_XHW7IUfu-9GJQT8mwUqptg_4Rfyd4W1';
 const _supH={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY};
@@ -595,17 +595,9 @@ async function init(){
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
   renderAll();refreshAll();setInterval(refreshAll,60000);
-  // 云端同步: 始终拉取云端最新数据(云端为准), 无数据才推本地
+  // 云端同步: 本地为准, 推送到云端备份
   try{
-    const cloud=await cloudLoad();
-    if(cloud&&cloud.holdings&&cloud.holdings.length){
-      holdings=cloud.holdings;
-      if(cloud.realized_pnl!=null){realizedPnL=cloud.realized_pnl;sv(SK_RPNL,realizedPnL);}
-      localStorage.setItem(SK_H,JSON.stringify(holdings));
-      renderAll();
-    }else{
-      cloudSave(holdings);
-    }
+    cloudSave(holdings);
   }catch(e){}
 }
 init();
