@@ -568,7 +568,7 @@ function editOne(id){document.getElementById('modalTitle').textContent='✎ 编�
 function saveFromModal(){for(const h of holdings){if(!h.id)h.id='h_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);h.totalInvested=(h.shares||0)*(h.avgCost||1);}sv(SK_H,holdings);closeSettings();refreshAll();}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('active');}
 function addHolding(){holdings.push({id:'h_'+Date.now(),code:'000000',name:'新基金',shares:1000,avgCost:1,totalInvested:1000,dcaAmt:0,currency:'CNY',start:'',type:'other'});openSettings();}
-function sellHolding(ri){const h=holdings[ri];if(!h)return;const px=priceCache[h.code]?.price||h.avgCost||1;const mv=toCNY(h,getHoldingValue(h,px));const iv=toCNY(h,h.totalInvested||(h.shares||0)*(h.avgCost||1));realizedPnL+=Math.round(mv-iv);sv(SK_RPNL,realizedPnL);holdings.splice(ri,1);}
+function sellHolding(ri){const h=holdings[ri];if(!h)return;const px=priceCache[h.code]?.price||h.avgCost||1;const mv=toCNY(h,getHoldingValue(h,px));const iv=toCNY(h,h.totalInvested||(h.shares||0)*(h.avgCost||1));realizedPnL+=Math.round(mv-iv);sv(SK_RPNL,realizedPnL);holdings.splice(ri,1);sv(SK_H,holdings);}
 
 // ==================== EXPORT/IMPORT ====================
 function exportData(){const b=new Blob([JSON.stringify({holdings,snapshots,usdCny,lastDcaDate,cardColors,date:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='lamar_'+new Date().toISOString().slice(0,10)+'.json';a.click();}
