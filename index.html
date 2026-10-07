@@ -595,9 +595,17 @@ async function init(){
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
   renderAll();refreshAll();setInterval(refreshAll,60000);
-  // 云端同步: 本地为准, 推送到云端备份
+  // 云端同步: 从云端拉取最新数据(云端为准), 无数据才推本地
   try{
-    cloudSave(holdings);
+    const cloud=await cloudLoad();
+    if(cloud&&cloud.holdings&&cloud.holdings.length){
+      holdings=cloud.holdings;
+      if(cloud.realized_pnl!=null){realizedPnL=cloud.realized_pnl;sv(SK_RPNL,realizedPnL);}
+      localStorage.setItem(SK_H,JSON.stringify(holdings));
+      renderAll();
+    }else{
+      cloudSave(holdings);
+    }
   }catch(e){}
 }
 init();
