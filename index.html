@@ -100,7 +100,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <div class="summary-row">
   <div class="summary-card c1" onclick="openColorPicker(1,event)" title="点击自定义背景色"><div class="label" style="color:var(--cyan)">📦 总资产</div><div class="value" style="color:var(--cyan)" id="totalValue">--</div><div class="sub" id="totalChange">--</div></div>
   <div class="summary-card c2" onclick="openColorPicker(2,event)" title="点击自定义背景色"><div class="label" style="color:#aaa">💰 总投入</div><div class="value" style="color:#aaa" id="totalCost">--</div><div class="sub">含定投累计</div></div>
-  <div class="summary-card c3" onclick="openColorPicker(3,event)" title="点击自定义背景色"><div class="label" id="labelPnL">📈 累计盈亏</div><div class="value" id="totalPnL">--</div><div class="sub" id="totalPnLPct">--</div></div>
+  <div class="summary-card c3" onclick="openColorPicker(3,event)" title="点击自定义背景色"><div class="label" id="labelPnL">📈 当前持仓盈亏</div><div class="value" id="totalPnL">--</div><div class="sub" id="totalPnLPct">--</div></div>
   <div class="summary-card c4" onclick="openColorPicker(4,event)" title="点击自定义背景色"><div class="label" id="labelToday">📉 今日盈亏</div><div class="value" id="todayPnL">--</div><div class="sub" id="todayPnLPct">--</div></div>
   <div class="summary-card c5" onclick="openColorPicker(5,event)" title="点击自定义背景色"><div class="label">💸 日定投总额</div><div class="value" style="color:var(--gold);font-size:20px" id="dcaSum">--</div><div class="sub" id="dcaDetail">--</div></div>
 </div>
@@ -408,13 +408,13 @@ function renderHoldings(){
     return'<tr><td style="font-size:19px">'+catBadge(h.type)+'</td><td style="color:#ccc;font-size:11px">'+h.code+'</td><td style="color:#fff;font-size:14px;padding-right:0;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+h.name+'</td><td class="'+cls+'" style="font-size:15px;padding-left:0">'+(fetched!=null?s+Math.abs(pct).toFixed(2)+'%':'--')+'</td><td style="font-size:15px">'+pnlD+'</td><td style="font-size:15px">'+tChg+'</td><td style="color:#ddd;font-size:12px">'+(h.shares||0).toLocaleString()+'</td><td style="color:#ddd;font-size:12px">'+(h.avgCost||1).toFixed(4)+'</td><td style="color:#fff;font-size:12px">'+pxD+'</td><td style="color:#fff;font-size:12px">'+mvD+'</td><td style="color:#ddd;font-size:12px">'+ivD+'</td><td style="color:var(--gold);font-weight:bold;font-size:12px">'+dcaStr+'</td><td class="'+(isUSD?'cur-usd':'cur-cny')+'" style="font-size:11px">'+(h.currency||'CNY')+'</td><td><button class="btn btn-o btn-sm" onclick="editOne(\''+h.id+'\')">✎</button></td></tr>';
   }).join('');
   tbody.innerHTML=rows||'<tr><td colspan="12" style="text-align:center;color:#444;padding:40px">暂无</td></tr>';
-  const net=tv-tc+realizedPnL,np=tc>0?(net/tc*100):0;
+  const net=tv-tc,np=tc>0?(net/tc*100):0;
   const cls=net>=0?'up':'down',s=net>=0?'+':'';
   const set=(id,v,h)=>{const el=document.getElementById(id);if(el){if(h)el.innerHTML=v;else el.textContent=v;}};
   set('totalValue','¥'+Math.round(tv).toLocaleString());set('totalCost','¥'+Math.round(tc).toLocaleString());
   const tCls=tdy>=0?'up':'down',tSign=tdy>=0?'+':'',tBg=tdy>=0?'rgba(244,63,94,.15)':'rgba(61,214,140,.15)',tBorder=tdy>=0?'rgba(244,63,94,.4)':'rgba(61,214,140,.4)';
   set('totalPnL','<span class="'+cls+'" style="font-size:26px">'+s+'¥'+Math.round(Math.abs(net)).toLocaleString()+'</span>',1);
-  set('totalPnLPct','<span class="'+cls+'" style="font-size:22px">'+s+np.toFixed(2)+'%</span>'+(realizedPnL!==0?' <span style="font-size:22px;color:#888">(已实现'+((realizedPnL>=0?'+':'-')+'¥'+Math.abs(Math.round(realizedPnL)).toLocaleString())+')</span>':''),1);
+  set('totalPnLPct','<span class="'+cls+'" style="font-size:22px">'+s+np.toFixed(2)+'%</span>',1);
   set('todayPnL','<span style="color:#fff;background:'+tBg+';border:1px solid '+tBorder+';border-radius:6px;padding:2px 10px;display:inline-block">'+tSign+'¥'+Math.round(Math.abs(tdy)).toLocaleString()+'</span>',1);
   set('todayPnLPct','<span style="color:#ccc;font-size:13px">'+tSign+(tc>0?(tdy/tc*100).toFixed(2):0)+'%</span>',1);
   set('labelToday','📉 今日盈亏',0);set('totalChange','<span style="font-size:26px;font-weight:bold;color:var(--cyan)">美元资产 $'+Math.round(usdTot).toLocaleString()+'</span>',1);set('holdingCount',(filter?sorted.length+'/'+holdings.length:holdings.length)+' 条');
