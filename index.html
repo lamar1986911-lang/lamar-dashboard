@@ -190,8 +190,8 @@ const defaultHoldings=[
   {id:'5',code:'021000',name:'南方纳指QDII',type:'nasdaq100',shares:64055.57,avgCost:2.2346,totalInvested:143138.58,dcaAmt:200,currency:'CNY',start:'2026-03'},
   {id:'6',code:'021778',name:'广发纳指QDII',type:'nasdaq100',shares:6312.54,avgCost:8.2851,totalInvested:52300.03,dcaAmt:0,currency:'CNY',start:'2026-03'},
   {id:'7',code:'018738',name:'标普QDII',type:'sp500',shares:11653.550030555747,avgCost:5.322408179256093,totalInvested:62024.95,dcaAmt:0,currency:'CNY',start:'2026-06'},
-  {id:'10',code:'sh513500',name:'标普ETF',type:'sp500',shares:40000,avgCost:2.674,totalInvested:106960,dcaAmt:0,currency:'CNY',start:'2026-07'},
-  {id:'11',code:'sh513100',name:'纳指ETF',type:'nasdaq100',shares:15900,avgCost:2.228,totalInvested:35425.2,dcaAmt:0,currency:'CNY',start:'2026-07'},
+  {id:'10',code:'sh513500',name:'标普ETF',type:'sp500',shares:40200,avgCost:2.674,totalInvested:107494.8,dcaAmt:0,currency:'CNY',start:'2026-07'},
+  {id:'11',code:'sh513100',name:'纳指ETF',type:'nasdaq100',shares:16100,avgCost:2.23,totalInvested:35903,dcaAmt:0,currency:'CNY',start:'2026-07'},
   {id:'12',code:'022459',name:'A500',type:'csi_a500',shares:11159,avgCost:1.3045,totalInvested:14556.92,dcaAmt:20,currency:'CNY',start:'2026-07'},
   {id:'13',code:'018147',name:'建信QDII',type:'satellite',shares:1506,avgCost:2.2704,totalInvested:3419.22,dcaAmt:20,currency:'CNY',start:'2026-05'},
   {id:'14',code:'008281',name:'半导体ETF',type:'satellite',shares:3274.87,avgCost:2.8093,totalInvested:9200.09,dcaAmt:20,currency:'CNY',start:'2026-05'},
@@ -201,10 +201,10 @@ const defaultHoldings=[
   {id:'h_1786264667041',code:'NYT',name:'纽约时报',type:'value',shares:4,avgCost:73.85,totalInvested:295.4,dcaAmt:0,currency:'USD',start:'2026-06'},
   {id:'h_1786264754490',code:'AAPL',name:'苹果',type:'value',shares:4,avgCost:310.87,totalInvested:1243.48,dcaAmt:0,currency:'USD',start:'2026-06'},
   {id:'h_1786264785543',code:'GOOGL',name:'谷歌A',type:'value',shares:2.55997,avgCost:342.611,totalInvested:877.07,dcaAmt:0,currency:'USD',start:'2026-06'},
-  {id:'h_1786264865472',code:'VGT',name:'VGT',type:'vgt',shares:3.6066,avgCost:121.7684,totalInvested:439.17,dcaAmt:15,currency:'USD',start:'2026-06'},
+  {id:'h_1786264865472',code:'VGT',name:'VGT',type:'vgt',shares:3.7231682312713708,avgCost:121.98481824843893,totalInvested:454.17,dcaAmt:15,currency:'USD',start:'2026-06'},
   {id:'h_1786264894692',code:'005698',name:'华夏科技',type:'satellite',shares:5745.42,avgCost:3.3277,totalInvested:19119.03,dcaAmt:0,currency:'CNY',start:'2026-06'},
   {id:'h_1786266549712',code:'020602',name:'红利低波',type:'csi_a500',shares:13652,avgCost:1.0691,totalInvested:14595.35,dcaAmt:300,currency:'CNY',start:'2026-06'},
-  {id:'h_1786270977338',code:'sz159509',name:'纳科ETF',type:'nasdaq100',shares:6100,avgCost:2.822,totalInvested:17214.2,dcaAmt:0,currency:'CNY',start:'2026-06'},
+  {id:'h_1786270977338',code:'sz159509',name:'纳科ETF',type:'nasdaq100',shares:6300,avgCost:2.836,totalInvested:17866.8,dcaAmt:0,currency:'CNY',start:'2026-06'},
   {id:'h_1787011675777',code:'SMH',name:'SMH',type:'smh',shares:0.8105,avgCost:576.422,totalInvested:467.19,dcaAmt:15,currency:'USD',start:'2026-08'},
   {id:'h_1787653306299',code:'SCHD',name:'SCHD',type:'schd',shares:118.6258,avgCost:33.89,totalInvested:4020.23,dcaAmt:100,currency:'USD',start:'2026-08'},
   {id:'h_1787653364221',code:'VOO',name:'VOO',type:'sp500',shares:1.5898,avgCost:704.0194,totalInvested:1119.25,dcaAmt:0,currency:'USD',start:'2026-08'}
@@ -249,24 +249,12 @@ function loadScript(url,timeout=5000){
 // 基金净值: 东财 NAV API (实时) > CDN (兜底)
 const _fundHistory={},_fundLock={};
 async function srcFund(code){
+  // 东财 NAV API 已启用防盗链(需 Referer)，浏览器不可用；改用 pingzhongdata CDN
   while(_fundLock._busy)await new Promise(r=>setTimeout(r,50));
   _fundLock._busy=true;
   let result=null;
   try{
-    const cb='_fj'+Date.now();
-    window[cb]=function(d){
-      if(d&&d.Data&&d.Data.LSJZList&&d.Data.LSJZList.length>0){
-        const item=d.Data.LSJZList[0];
-        const px=parseFloat(item.DWJZ),chg=parseFloat(item.JZZZL);
-        if(px>0)result={price:px,change:isNaN(chg)?0:chg};
-      }
-    };
-    await loadScript('https://api.fund.eastmoney.com/f10/lsjz?callback='+cb+'&fundCode='+code+'&pageIndex=1&pageSize=1',4000);
-    delete window[cb];
-    if(result){_fundLock._busy=false;return result;}
-  }catch(e){delete window[cb];_fundLock._busy=false;}
-  try{
-    await loadScript('https://fund.eastmoney.com/pingzhongdata/'+code+'.js?v='+Date.now()+'&_='+Math.random(),6000);
+    await loadScript('https://fund.eastmoney.com/pingzhongdata/'+code+'.js?v='+Date.now()+'&_='+Math.random(),8000);
     const trend=window.Data_netWorthTrend;delete window.Data_netWorthTrend;
     if(trend&&trend.length>0){
       _fundHistory[code]=trend;
@@ -516,7 +504,8 @@ function renderAll(){renderIndices();renderHoldings();checkAutoDCA();drawTargetC
 // ==================== FETCH ====================
 async function _fetchOne(h){
   if(_cached(h.code)){_fetchLog.push({code:h.code,name:h.name,ok:true,price:priceCache[h.code].price,cached:true});return null;}
-  try{const d=await Promise.race([fetchPrice(h),new Promise(r=>setTimeout(()=>r(null),6000))]);if(d&&d.price>0){_setCache(h.code,{price:d.price,change:d.change});_fetchLog.push({code:h.code,name:h.name,ok:true,price:d.price});return null;}_fetchLog.push({code:h.code,name:h.name,ok:false,reason:d?'px=0':'no data'});return h;}catch(e){_fetchLog.push({code:h.code,name:h.name,ok:false,reason:e.message||''+e});return h;}
+  const isFund=/^\d{6}$/.test(h.code);const tmo=isFund?60000:6000;
+  try{const d=await Promise.race([fetchPrice(h),new Promise(r=>setTimeout(()=>r(null),tmo))]);if(d&&d.price>0){_setCache(h.code,{price:d.price,change:d.change});_fetchLog.push({code:h.code,name:h.name,ok:true,price:d.price});return null;}_fetchLog.push({code:h.code,name:h.name,ok:false,reason:d?'px=0':'no data'});return h;}catch(e){_fetchLog.push({code:h.code,name:h.name,ok:false,reason:e.message||''+e});return h;}
 }
 async function _fetchBatch(items,concurrency=4){const results=[],queue=[...items],running=new Set();while(queue.length>0||running.size>0){while(running.size<concurrency&&queue.length>0){const h=queue.shift();const p=_fetchOne(h).then(r=>{running.delete(p);return r;});running.add(p);results.push(p);}if(running.size>0)await Promise.race([...running]);else break;}return (await Promise.all(results)).filter(Boolean);}
 
