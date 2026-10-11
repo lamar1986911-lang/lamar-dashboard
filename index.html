@@ -583,18 +583,9 @@ async function init(){
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
   renderAll();refreshAll();setInterval(refreshAll,60000);
-  // 云端同步: 从云端拉取最新数据(云端为准), 无数据才推本地
-  try{
-    const cloud=await cloudLoad();
-    if(cloud&&cloud.holdings&&cloud.holdings.length){
-      holdings=cloud.holdings;
-      if(cloud.realized_pnl!=null){realizedPnL=cloud.realized_pnl;sv(SK_RPNL,realizedPnL);}
-      localStorage.setItem(SK_H,JSON.stringify(holdings));
-      renderAll();
-    }else{
-      cloudSave(holdings);
-    }
-  }catch(e){}
+  // 持仓以文件内 defaultHoldings 为准(每次导入附件都会同步更新)。
+  // 只向云端备份，不再从云端拉取覆盖本地 — 避免旧数据污染 localStorage。
+  try{ cloudSave(holdings); }catch(e){}
 }
 init();
 </script>
