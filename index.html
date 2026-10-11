@@ -125,7 +125,8 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
   <span style="font-weight:bold;color:var(--gold);font-size:13px">📋 持仓明细</span><span style="color:#555;font-size:9px" id="holdingCount">0</span>
   <select id="catFilter" onchange="renderHoldings()" style="padding:2px 6px;background:#0d1119;border:1px solid var(--border);color:#ccc;border-radius:3px;font-size:10px;margin-left:6px"><option value="">全部类别</option></select>
   <span style="flex:1"></span><span style="font-size:9px;color:#555">USD/CNY:</span>
-  <input type="number" id="usdRate" value="7.25" step="0.01" style="width:55px;padding:3px 5px;background:#0d1119;border:1px solid var(--border);color:var(--cyan);border-radius:3px;font-size:10px" onchange="saveUSDRate()">
+  <input type="number" id="usdRate" value="7.25" step="0.0001" title="自动更新，也可手动修改" style="width:68px;padding:3px 5px;background:#0d1119;border:1px solid var(--border);color:var(--cyan);border-radius:3px;font-size:10px" onchange="saveUSDRate()">
+  <button class="btn btn-o btn-sm" onclick="autoUpdateUsdCny(true)" title="立即刷新汇率">🔄</button>
   <button class="btn btn-o btn-sm" onclick="addHolding()">+ 添加</button>
   <button class="btn btn-o btn-sm" onclick="openSettings()">⚙️ 编辑</button>
   <button class="btn btn-g" onclick="execDCA()" style="font-size:16px;padding:6px 14px;font-weight:bold">💸 今日定投</button>
@@ -330,6 +331,38 @@ async function srcUSStock(code){
     delete window[vn];
   }catch(e){}
   return null;
+}
+
+// 汇率: 腾讯外汇 (script tag, 与股票同源, 无 CORS 限制)
+async function srcUsdCny(){
+  try{
+    const vn='v_whUSDCNY';
+    await loadScript('https://qt.gtimg.cn/q=whUSDCNY',5000);
+    const raw=window[vn];delete window[vn];
+    if(raw&&raw.trim()){
+      const f=raw.split('~');
+      const r=parseFloat(f[3]);
+      if(r>0)return r;
+    }
+    delete window[vn];
+  }catch(e){}
+  return null;
+}
+// 自动更新汇率(1小时缓存), 更新后自动重算所有折算金额
+let _usdCnyTs=parseInt((function(){try{return localStorage.getItem('lamar_usd_ts')||'0';}catch(e){return '0';}})()||'0',10);
+async function autoUpdateUsdCny(force){
+  const now=Date.now();
+  if(!force&&now-_usdCnyTs<3600000)return;
+  const r=await srcUsdCny();
+  if(r&&r>0){
+    _usdCnyTs=now;
+    usdCny=Math.round(r*10000)/10000;
+    sv(SK_USD,usdCny);
+    try{localStorage.setItem('lamar_usd_ts',String(now));}catch(e){}
+    const el=document.getElementById('usdRate');
+    if(el)el.value=usdCny;
+    renderAll();
+  }
 }
 
 async function fetchPrice(h){
@@ -540,7 +573,7 @@ async function fetchAllPrices(){
   renderAll();
 }
 
-function refreshAll(){renderAll();_fetchLog.length=0;const st=document.getElementById('refreshStatus');if(st)st.textContent='● 抓取中...';const db=document.getElementById('diagBar');if(db)db.innerHTML='<span style="color:#888">抓取中...</span>';fetchAllPrices().catch(()=>{if(st)st.innerHTML='<span style="color:var(--red)">● 离线</span>';if(db)db.innerHTML='<span style="color:var(--red)">抓取异常</span>';renderAll();});}
+function refreshAll(){renderAll();autoUpdateUsdCny();_fetchLog.length=0;const st=document.getElementById('refreshStatus');if(st)st.textContent='● 抓取中...';const db=document.getElementById('diagBar');if(db)db.innerHTML='<span style="color:#888">抓取中...</span>';fetchAllPrices().catch(()=>{if(st)st.innerHTML='<span style="color:var(--red)">● 离线</span>';if(db)db.innerHTML='<span style="color:var(--red)">抓取异常</span>';renderAll();});}
 
 async function fetchStockHistory(code,days=5){if(_stockHistory[code])return _stockHistory[code];let full=code;if(/^\d{6}$/.test(code))full=(/^[659]/.test(code)?'sh':'sz')+code;if(full.startsWith('sh')||full.startsWith('sz')){try{const mkt=full.startsWith('sh')?'1':'0',sc=mkt+'.'+full.slice(2);const r=await fetch('https://push2.eastmoney.com/api/qt/stock/kline/get?secid='+sc+'&fields1=f1&fields2=f2,f3&klt=101&fqt=0&lmt='+days);const j=await r.json();if(j&&j.data&&j.data.klines){_stockHistory[code]=j.data.klines.map(k=>{const p=k.split(',');return{date:p[0],close:parseFloat(p[2])};});return _stockHistory[code];}}catch(e){}}else{try{const j=await (await fetch('https://query1.finance.yahoo.com/v8/finance/chart/'+code+'?interval=1d&range=5d')).json();const ts=j.chart.result[0].timestamp;const closes=j.chart.result[0].indicators.quote[0].close;_stockHistory[code]=ts.map((t,i)=>{const d=new Date(t*1000);return{date:d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0'),close:closes[i]};});return _stockHistory[code];}catch(e){}}_stockHistory[code]=[];return[];}
 const _stockHistory={};
@@ -590,7 +623,7 @@ async function init(){
   updateClock();setInterval(updateClock,1000);
   document.getElementById('usdRate').value=usdCny;applyCardColors();
   document.getElementById('bgPicker').value=bgColor;
-  renderAll();refreshAll();setInterval(refreshAll,60000);
+  renderAll();autoUpdateUsdCny();refreshAll();setInterval(refreshAll,60000);
   // 持仓以文件内 defaultHoldings 为准(每次导入附件都会同步更新)。
   // 只向云端备份，不再从云端拉取覆盖本地 — 避免旧数据污染 localStorage。
   try{ cloudSave(holdings); }catch(e){}
