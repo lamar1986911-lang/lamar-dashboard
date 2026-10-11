@@ -67,6 +67,13 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
   .summary-row{grid-template-columns:repeat(2,1fr)}
   .summary-card.c3{display:none}
 }
+/* 保存提示 Toast */
+#toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-40px) scale(.9);z-index:99999;
+  padding:16px 40px;border-radius:12px;font-size:21px;font-weight:bold;color:#fff;letter-spacing:.5px;
+  box-shadow:0 12px 48px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.25);
+  opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.22)}
+#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .bar-flow{background-size:200% 100%;animation:shimmer 3s ease-in-out infinite}
 </style>
@@ -202,13 +209,13 @@ async function cloudLoad(){
     _syncBadge('云端为空','#888');return null;
   }catch(e){_syncBadge('云端异常','#f43f5e');return null;}
 }
-function cloudSave(arr){
+function cloudSave(arr,silent){
   _syncBadge('上传中…','#f0b060');
   _supFetch(SUPABASE_URL+'/rest/v1/holdings_sync?id=eq.1',{
     method:'PATCH',
     headers:Object.assign({'Content-Type':'application/json',Prefer:'return=minimal'},_supH),
     body:JSON.stringify({holdings:arr,updated_at:new Date().toISOString(),realized_pnl:realizedPnL})
-  }).then(function(r){_syncBadge(r?'已上传':'上传失败','#3dd68c');});
+  }).then(function(r){if(r){_syncBadge('已上传','#3dd68c');if(!silent)toast('☁️ 已同步到云端','ok',1600);}else{_syncBadge('上传失败','#f43f5e');if(!silent)toast('⚠️ 云端同步失败，请稍后重试','err',3600);}});
 }
 
 const CATS={sp500:{tgt:35,c:'#2563eb',l:'标普500'},nasdaq100:{tgt:22,c:'#4dabf7',l:'纳指100'},bond:{tgt:15,c:'#f0b060',l:'债券'},csi_a500:{tgt:10,c:'#f472b6',l:'A500'},smh:{tgt:3,c:'#22d3ee',l:'SMH'},schd:{tgt:10,c:'#34d399',l:'SCHD'},value:{tgt:5,c:'#a78bfa',l:'价值个股'}};
@@ -242,7 +249,7 @@ const defaultHoldings=[
 ];
 
 function ld(k,f){try{const r=localStorage.getItem(k);if(r)return JSON.parse(r);}catch(e){}return f?JSON.parse(JSON.stringify(f)):null;}
-function sv(k,d){try{localStorage.setItem(k,JSON.stringify(d));if(k===SK_H){localStorage.setItem(SK_H+'_bak',JSON.stringify(d));localStorage.setItem(SK_H+'_ts',String(Date.now()));cloudSave(d);}}catch(e){}}
+function sv(k,d,notify){try{localStorage.setItem(k,JSON.stringify(d));if(k===SK_H){localStorage.setItem(SK_H+'_bak',JSON.stringify(d));localStorage.setItem(SK_H+'_ts',String(Date.now()));cloudSave(d,!notify);}}catch(e){}}
 
 // 数据版本校验：文件内 defaultHoldings 的版本变化时，自动忽略浏览器旧缓存
 const DATA_VER='2026-10-11';
@@ -629,14 +636,25 @@ function buildForm(filterFn){const list=filterFn?holdings.filter(filterFn):holdi
 function buildFormInModal(filterFn){document.getElementById('settingsForm').innerHTML=buildForm(filterFn);}
 function openSettings(){document.getElementById('modalTitle').textContent='⚙️ 批量编辑持仓';buildFormInModal();document.getElementById('settingsModal').classList.add('active');}
 function editOne(id){document.getElementById('modalTitle').textContent='✎ 编辑持仓';document.getElementById('settingsForm').innerHTML=buildForm(h=>h.id===id);document.getElementById('settingsModal').classList.add('active');}
-function saveFromModal(){for(const h of holdings){if(!h.id)h.id='h_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);h.totalInvested=(h.shares||0)*(h.avgCost||1);}sv(SK_H,holdings);closeSettings();refreshAll();}
+let _toastTimer;
+function toast(msg,type,ms){
+  let el=document.getElementById('toast');
+  if(!el){el=document.createElement('div');el.id='toast';document.body.appendChild(el);}
+  const bg={ok:'linear-gradient(135deg,#059669,#10b981)',err:'linear-gradient(135deg,#dc2626,#ef4444)',info:'linear-gradient(135deg,#2563eb,#60a5fa)'};
+  el.style.background=bg[type]||bg.info;
+  el.textContent=msg;
+  requestAnimationFrame(function(){el.classList.add('show');});
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(function(){el.classList.remove('show');},ms||2600);
+}
+function saveFromModal(){for(const h of holdings){if(!h.id)h.id='h_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);h.totalInvested=(h.shares||0)*(h.avgCost||1);}sv(SK_H,holdings,true);closeSettings();refreshAll();toast('✅ 已保存 '+holdings.length+' 条持仓','ok');}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('active');}
 function addHolding(){holdings.push({id:'h_'+Date.now(),code:'000000',name:'新基金',shares:1000,avgCost:1,totalInvested:1000,dcaAmt:0,currency:'CNY',start:'',type:'other'});openSettings();}
-function sellHolding(ri){const h=holdings[ri];if(!h)return;const px=priceCache[h.code]?.price||h.avgCost||1;const mv=toCNY(h,getHoldingValue(h,px));const iv=toCNY(h,h.totalInvested||(h.shares||0)*(h.avgCost||1));realizedPnL+=Math.round(mv-iv);sv(SK_RPNL,realizedPnL);holdings.splice(ri,1);sv(SK_H,holdings);}
+function sellHolding(ri){const h=holdings[ri];if(!h)return;const px=priceCache[h.code]?.price||h.avgCost||1;const mv=toCNY(h,getHoldingValue(h,px));const iv=toCNY(h,h.totalInvested||(h.shares||0)*(h.avgCost||1));realizedPnL+=Math.round(mv-iv);sv(SK_RPNL,realizedPnL);holdings.splice(ri,1);sv(SK_H,holdings,true);toast('✅ 已卖出 '+h.name+'，盈亏 '+((mv-iv)>=0?'+':'-')+'¥'+Math.abs(Math.round(mv-iv)).toLocaleString(),'ok',3200);}
 
 // ==================== EXPORT/IMPORT ====================
 function exportData(){const b=new Blob([JSON.stringify({holdings,snapshots,usdCny,lastDcaDate,cardColors,date:new Date().toISOString()},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='lamar_'+new Date().toISOString().slice(0,10)+'.json';a.click();}
-function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(d.holdings){holdings=d.holdings;sv(SK_H,holdings);}if(d.snapshots){snapshots=d.snapshots;sv(SK_S,snapshots);}if(d.usdCny){usdCny=d.usdCny;sv(SK_USD,usdCny);document.getElementById('usdRate').value=usdCny;}if(d.lastDcaDate){lastDcaDate=d.lastDcaDate;sv(SK_DCA,lastDcaDate);}if(d.cardColors){cardColors=d.cardColors;sv(SK_CC,cardColors);applyCardColors();}refreshAll();alert('导入成功');}catch(err){alert('格式错误');}};r.readAsText(f);}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(d.holdings){holdings=d.holdings;sv(SK_H,holdings);}if(d.snapshots){snapshots=d.snapshots;sv(SK_S,snapshots);}if(d.usdCny){usdCny=d.usdCny;sv(SK_USD,usdCny);document.getElementById('usdRate').value=usdCny;}if(d.lastDcaDate){lastDcaDate=d.lastDcaDate;sv(SK_DCA,lastDcaDate);}if(d.cardColors){cardColors=d.cardColors;sv(SK_CC,cardColors);applyCardColors();}refreshAll();toast('✅ 导入成功','ok');}catch(err){toast('❌ 文件格式错误','err',3200);}};r.readAsText(f);}
 
 // ==================== CARD COLORS ====================
 function applyCardColors(){for(let i=1;i<=5;i++){const card=document.querySelector('.summary-card.c'+i);if(card&&cardColors['c'+i]){const c=cardColors['c'+i];card.style.setProperty('background','linear-gradient(135deg,'+c[0]+','+c[1]+')','important');}}}
