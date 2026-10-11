@@ -173,7 +173,7 @@ td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.04)}tr:hover td{bac
 <script src="valuation_data.js"></script>
 <script>
 // ==================== DATA ====================
-const SK_H='lamar_h_v6',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1',SK_RPNL='lamar_rpnl_v1';
+const SK_H='lamar_h_v1',SK_S='lamar_s_v6',SK_USD='lamar_usd_v1',SK_DCA='lamar_dcaDate_v1',SK_CC='lamar_card_colors_v1',SK_DPNL='lamar_dpnl_v1',SK_BG='lamar_bg_v1',SK_RPNL='lamar_rpnl_v1';
 const SUPABASE_URL='https://klhbsfxgkkahbnvlsaqy.supabase.co';
 const SUPABASE_KEY='sb_publishable_XHW7IUfu-9GJQT8mwUqptg_4Rfyd4W1';
 const _supH={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY};
@@ -213,7 +213,15 @@ const defaultHoldings=[
 function ld(k,f){try{const r=localStorage.getItem(k);if(r)return JSON.parse(r);}catch(e){}return f?JSON.parse(JSON.stringify(f)):null;}
 function sv(k,d){try{localStorage.setItem(k,JSON.stringify(d));if(k===SK_H){localStorage.setItem(SK_H+'_bak',JSON.stringify(d));localStorage.setItem(SK_H+'_ts',String(Date.now()));cloudSave(d);}}catch(e){}}
 
-let holdings=ld(SK_H,null)||ld(SK_H+'_bak',null)||JSON.parse(JSON.stringify(defaultHoldings));
+// 数据版本校验：文件内 defaultHoldings 的版本变化时，自动忽略浏览器旧缓存
+const DATA_VER='2026-10-11';
+let holdings;
+if(localStorage.getItem('lamar_data_ver')===DATA_VER){
+  holdings=ld(SK_H,null)||ld(SK_H+'_bak',null)||JSON.parse(JSON.stringify(defaultHoldings));
+}else{
+  holdings=JSON.parse(JSON.stringify(defaultHoldings));
+  try{localStorage.setItem('lamar_data_ver',DATA_VER);}catch(e){}
+}
 let snapshots=ld(SK_S,[]);
 let usdCny=ld(SK_USD,7.25);
 let lastDcaDate=ld(SK_DCA,'');
